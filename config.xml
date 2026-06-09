@@ -1,0 +1,7 @@
+<jobs>
+  <job name="alpha5dr" module="alpha5dr">
+    <option name="ndays" value="5" />
+    <option name="symbol" value="DEMO" />
+  </job>
+  <job name="momentum" module="txliumom01" />
+</jobs>
