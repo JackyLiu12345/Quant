@@ -1,30 +1,37 @@
-from __future__ import annotations
+try:
+    import numpy as np
+except ModuleNotFoundError:  # pragma: no cover - fallback for lightweight environments
+    from strike import npcompat as np
 
-from typing import Dict, List
+from strike.alphabase import AlphaBase
+from strike.config import ConfigNode
+from strike.dataregister import DataRegister
 
-from tool.framework import AlphaBase, DataRegister
 
-
-def create(alpha_id: str, cfg: Dict[str, str], dr: DataRegister) -> "Alpha5DR":
-    return Alpha5DR(alpha_id, cfg, dr)
+def create(id, cfg, dr):
+    return Alpha5DR(id, cfg, dr)
 
 
 class Alpha5DR(AlphaBase):
-    """5-day mean reversion alpha example."""
+    """
+    5-days reversion
+    """
 
-    def __init__(self, alpha_id: str, cfg: Dict[str, str], dr: DataRegister):
-        super().__init__(alpha_id=alpha_id, cfg=cfg, dr=dr)
-        self.ndays = int(cfg.get("ndays", "5"))
-        self.close = dr.load_close()
+    def __init__(self, alphaid: str, cfg: ConfigNode, dr: DataRegister) -> None:
+        super().__init__(alphaid, cfg, dr)
+        self.ndays = self.cfg.get_attr_default("ndays", 5)
+        self.close = self.dr.getdata("close")
 
-    def generate(self) -> List[float]:
-        if len(self.close) < self.ndays:
-            return []
+    def start_di(self) -> int:
+        return max(self.delay, self.ndays + self.delay - 1)
 
-        output: List[float] = []
-        for idx, value in enumerate(self.close):
-            start = max(0, idx - self.ndays + 1)
-            window = self.close[start : idx + 1]
-            rolling_mean = sum(window) / len(window)
-            output.append(rolling_mean - value)
-        return output
+    def generate(self, alpha_vec: np.ndarray, di: int) -> np.ndarray:
+        ix = [flag == 1 for flag in self.universe[di]]
+        window = self.close[di - self.ndays - self.delay + 1 : di - self.delay + 1]
+
+        for ai, active in enumerate(ix):
+            if not active:
+                continue
+            hist = [row[ai] for row in window]
+            alpha_vec[ai] = -self.close[di - self.delay][ai] + np.mean(hist)
+        return alpha_vec

@@ -4,31 +4,10 @@ from dataclasses import dataclass, field
 from importlib import import_module
 from pathlib import Path
 from typing import Dict, Iterable, List
-import math
 import xml.etree.ElementTree as ET
 
-
-@dataclass
-class DataRegister:
-    """Minimal data register that supplies synthetic close data for demo runs."""
-
-    symbol: str = "DEMO"
-    periods: int = 40
-
-    def load_close(self) -> List[float]:
-        return [100.0 + 0.25 * idx + math.sin(idx / 3.0) for idx in range(self.periods)]
-
-
-@dataclass
-class AlphaBase:
-    """Base class for alpha implementations."""
-
-    alpha_id: str
-    cfg: Dict[str, str]
-    dr: DataRegister
-
-    def generate(self) -> List[float]:
-        raise NotImplementedError
+from strike.config import ConfigNode
+from strike.dataregister import DataRegister
 
 
 @dataclass
@@ -62,10 +41,11 @@ class Runner:
         for job in self.jobs:
             module = import_module(job.module)
             create = getattr(module, "create")
+            cfg = ConfigNode(job.options)
             dr = DataRegister(symbol=job.options.get("symbol", "DEMO"))
-            alpha = create(job.name, job.options, dr)
-            output = alpha.generate()
-            sample = ", ".join(f"{value:.4f}" for value in output[-3:]) if output else "<empty>"
+            alpha = create(job.name, cfg, dr)
+            output = alpha.run()
+            sample = ", ".join(f"{value:.6f}" for value in output[-3:]) if output else "<empty>"
             print(f"[{job.name}] module={job.module} points={len(output)} tail=[{sample}]")
 
 
@@ -74,4 +54,4 @@ def ensure_paths() -> None:
         Path(folder).mkdir(parents=True, exist_ok=True)
 
 
-__all__ = ["AlphaBase", "DataRegister", "Runner", "parse_config", "ensure_paths"]
+__all__ = ["Runner", "parse_config", "ensure_paths"]

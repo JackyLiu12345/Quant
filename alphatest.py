@@ -1,12 +1,11 @@
-from __future__ import annotations
-
 from alpha5dr import create
-from tool.framework import DataRegister
+from strike.config import ConfigNode
+from strike.dataregister import DataRegister
 
 
 def main() -> None:
-    alpha = create("alpha5dr-demo", {"ndays": "5"}, DataRegister())
-    result = alpha.generate()
+    alpha = create("alpha5dr-demo", ConfigNode({"ndays": "5"}), DataRegister())
+    result = alpha.run()
     print(f"alpha5dr demo generated {len(result)} points")
 
 

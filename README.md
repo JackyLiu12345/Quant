@@ -1,18 +1,18 @@
 # Quant
 
-Lightweight scaffold for quantitative alpha research/backtesting inspired by an internal strike-style workflow.
+Lightweight scaffold for quantitative alpha research/backtesting that keeps factor scripts in a strike-style framework.
 
 ## Repository layout
 
 - `config_template/`: reusable XML config templates for demo jobs and data loading
 - `pnl/`: output placeholder for generated pnl artifacts
 - `source_ref/`: optional research/reference notes
-- `tool/`: minimal framework primitives (config parsing, synthetic data register, runner)
-- `alpha5dr.py`: 5-day mean reversion alpha example
-- `txliumom01.py`, `txliusize01.py`: optional placeholder alpha scripts
-- `alphatest.py`, `alphatest2.py`: example standalone test runners
+- `strike/`: local compatibility layer (`AlphaBase`, `ConfigNode`, `DataRegister`) for demo runs
+- `tool/`: config parsing and runner entry helpers
+- `alpha5dr.py`, `txliumom01.py`, `txliusize01.py`: factor mining scripts using strike-style signatures
+- `alphatest.py`, `alphatest2.py`: sample standalone runners
 - `config.xml`, `config.load.xml`: default runnable config files
-- `run.py`: entrypoint for executing configured jobs
+- `run.py`: entrypoint for configured jobs
 
 ## Setup
 
@@ -31,7 +31,7 @@ conda create -n quant python=3.11 -y
 conda activate quant
 ```
 
-No external package dependencies are required for this scaffold.
+No required external dependency is needed for demo mode. If `numpy` is installed, factors use it automatically.
 
 ## Run a sample job
 
@@ -48,6 +48,6 @@ python alphatest2.py
 
 ## Extension notes
 
-- Replace synthetic data generation in `tool/framework.py::DataRegister` with your private data loader.
-- Keep XML structure but map `job`/`option` parsing to your internal strike-style orchestration layer.
-- Add alpha modules using the same `create(alpha_id, cfg, dr)` entrypoint pattern.
+- Replace synthetic data generation in `strike/dataregister.py` with your private data loader.
+- Keep factor script structure (`create(id, cfg, dr)`, `AlphaBase`, `generate(alpha_vec, di)`) aligned with your internal strike framework.
+- XML job options can be extended in `config.xml` and parsed by `tool/framework.py`.
