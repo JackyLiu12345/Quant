@@ -1,0 +1,4 @@
+<load>
+  <dataset name="close" source="synthetic" />
+  <note>TODO: replace synthetic datasets with private/internal data loader integration.</note>
+</load>

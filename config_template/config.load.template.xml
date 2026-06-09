@@ -1,0 +1,5 @@
+<load>
+  <dataset name="close" source="synthetic" />
+  <dataset name="volume" source="synthetic" />
+  <note>TODO: wire this template to your private strike-style data registry.</note>
+</load>
